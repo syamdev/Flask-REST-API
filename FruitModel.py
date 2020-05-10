@@ -26,7 +26,7 @@ class Fruit(db.Model):
         db.session.commit()
 
     def get_all_fruits():
-        return Fruit.query.all()
+        return [Fruit.json(fruit) for fruit in Fruit.query.all()]
 
     def get_fruit(_stock):
         return Fruit.query.filter_by(stock=_stock).first()
