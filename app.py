@@ -214,6 +214,11 @@ def replace_fruit(stock):
     return response
 
 
+# Test PATCH request name or price only
+# {
+# 	"name": "Avocado"
+# }
+
 # PATCH /fruits/<int:stock>
 @app.route('/fruits/<int:stock>', methods=['PATCH'])
 def update_fruit(stock):
@@ -221,6 +226,9 @@ def update_fruit(stock):
     updated_fruit = {}
     if "name" in request_data:
         updated_fruit["name"] = request_data['name']
+
+    if "price" in request_data:
+        updated_fruit["price"] = request_data['price']
 
     for fruit in fruits:
         if fruit["stock"] == stock:
