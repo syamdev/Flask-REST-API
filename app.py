@@ -111,6 +111,8 @@ fruits = [
     }
 ]
 
+DEFAULT_PAGE_LIMIT = 3
+
 
 # Homepage
 @app.route('/')
@@ -124,6 +126,27 @@ def get_fruits():
     return jsonify({'fruits': fruits})
 
 
+# /fruits/stock_number GET request
+@app.route('/fruits/<int:stock>')
+def get_fruits_by_stock(stock):
+    return_value = {}
+    for fruit in fruits:
+        if fruit['stock'] == stock:
+            return_value = {
+                'name': fruit['name'],
+                'price': fruit['price']
+            }
+    return jsonify(return_value)
+
+
+# GET /fruits/page/<int:page_number>
+@app.route('/fruits/page/<int:page_number>')
+def get_paginated_fruits(page_number):
+    print(type(request.args.get('limit')))
+    limit = request.args.get('limit', DEFAULT_PAGE_LIMIT, int)
+    return jsonify({'fruits': fruits[page_number * limit - limit:page_number * limit]})
+
+
 # handle validity data request
 def valid_fruit_object(fruit_object):
     if "name" in fruit_object and "price" in fruit_object and "stock" in fruit_object:
@@ -132,7 +155,7 @@ def valid_fruit_object(fruit_object):
         return False
 
 
-# /fruits/stock_number POST request
+# POST /fruits/stock_number
 @app.route('/fruits', methods=['POST'])
 def add_fruits():
     request_data = request.get_json()
@@ -155,19 +178,6 @@ def add_fruits():
         }
         response = Response(json.dumps(invalid_fruit_obj_error_msg), status=400, mimetype='application/json')
         return response
-
-
-# /fruits/stock_number GET request
-@app.route('/fruits/<int:stock>')
-def get_fruits_by_stock(stock):
-    return_value = {}
-    for fruit in fruits:
-        if fruit['stock'] == stock:
-            return_value = {
-                'name': fruit['name'],
-                'price': fruit['price']
-            }
-    return jsonify(return_value)
 
 
 # Test PUT request
@@ -210,6 +220,7 @@ def replace_fruit(stock):
         if current_stock == stock:
             fruits[i] = new_fruit
         i += 1
+
     response = Response("", status=204)
     return response
 
@@ -233,9 +244,18 @@ def update_fruit(stock):
     for fruit in fruits:
         if fruit["stock"] == stock:
             fruit.update(updated_fruit)
+
     response = Response("", status=204)
-    response.headers['Location'] = "/fruit/" + str(stock)
+    response.headers['Location'] = "/fruits/" + str(stock)
     return response
+
+
+# DELETE /fruits/<int:stock>
+@app.route('/fruits/<int:stock>', methods=['DELETE'])
+def delete_fruit(stock):
+    for fruit in fruits:
+        if fruit["stock"] == stock:
+            return jsonify(fruit)
 
 
 app.run(port=5000)
