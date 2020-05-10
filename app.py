@@ -1,12 +1,12 @@
 from flask import Flask, jsonify, request, Response
 import json
-from .settings import *
+from settings import *
 
 fruits = [
     {
         'name': 'Apple',
         'price': 3.99,
-        'stock': 2020
+        'stock': 2001
     },
     {
         'name': 'Banana',
@@ -31,82 +31,82 @@ fruits = [
     {
         'name': 'Fig',
         'price': 2.99,
-        'stock': 2001
+        'stock': 2006
     },
     {
         'name': 'Grape',
         'price': 3.99,
-        'stock': 2002
+        'stock': 2007
     },
     {
         'name': 'Honeyberry',
         'price': 4.99,
-        'stock': 2003
+        'stock': 2008
     },
     {
         'name': 'Incaberry',
         'price': 2.99,
-        'stock': 2004
+        'stock': 2009
     },
     {
         'name': 'Jackfruit',
         'price': 4.99,
-        'stock': 2005
+        'stock': 2010
     },
     {
         'name': 'Kiwifruit',
         'price': 3.99,
-        'stock': 2001
+        'stock': 2011
     },
     {
         'name': 'Lemon',
         'price': 2.99,
-        'stock': 2002
+        'stock': 2012
     },
     {
         'name': 'Mango',
         'price': 4.99,
-        'stock': 2003
+        'stock': 2013
     },
     {
         'name': 'Nectarine',
         'price': 3.99,
-        'stock': 2004
+        'stock': 2014
     },
     {
         'name': 'Orange',
         'price': 2.99,
-        'stock': 2005
+        'stock': 2015
     },
     {
         'name': 'Papaya',
         'price': 3.99,
-        'stock': 2001
+        'stock': 2016
     },
     {
         'name': 'Quince',
         'price': 4.99,
-        'stock': 2002
+        'stock': 2017
     },
     {
         'name': 'Raspberry',
         'price': 2.99,
-        'stock': 2003
+        'stock': 2018
     },
     {
         'name': 'Strawberry',
         'price': 4.99,
-        'stock': 2004
+        'stock': 2019
     },
     {
         'name': 'Tamarind',
         'price': 3.99,
-        'stock': 2005
+        'stock': 2020
     },
     {
         'name': 'Watermelon',
         'price': 2.99,
-        'stock': 2001
+        'stock': 2021
     }
 ]
 
