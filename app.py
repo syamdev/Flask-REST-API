@@ -179,7 +179,21 @@ def get_fruits_by_stock(stock):
 # PUT /fruits/<int:stock>
 @app.route('/fruits/<int:stock>', methods=['PUT'])
 def replace_fruit(stock):
-    return jsonify(request.get_json())
+    request_data = request.get_json()
+    new_fruit = {
+        'name': request_data['name'],
+        'price': request_data['price'],
+        'stock': stock
+    }
+
+    i = 0
+    for fruit in fruits:
+        current_stock = fruit["stock"]
+        if current_stock == stock:
+            fruits[i] = new_fruit
+        i += 1
+    response = Response("", status=204)
+    return response
 
 
 app.run(port=5000)
