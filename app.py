@@ -169,17 +169,35 @@ def get_fruits_by_stock(stock):
             }
     return jsonify(return_value)
 
+
 # Test PUT request
 # {
 #     "price": 3.99,
 #     "stock": 2020
 # }
 
+# Check validity when PUT request
+def valid_put_request_data(request_data):
+    if "name" in request_data and "price" in request_data:
+        return True
+    else:
+        return False
+
 
 # PUT /fruits/<int:stock>
 @app.route('/fruits/<int:stock>', methods=['PUT'])
 def replace_fruit(stock):
     request_data = request.get_json()
+
+    # handle invalid data
+    if not valid_put_request_data(request_data):
+        invalid_fruit_obj_error_msg = {
+            "error": "Invalid fruit object passed in request",
+            "help_string": "Data passed in similar to this {'name': 'fruitname', 'price': 3.99, 'stock': 2002 }"
+        }
+        response = Response(json.dumps(invalid_fruit_obj_error_msg), status=400, mimetype='application/json')
+        return response
+
     new_fruit = {
         'name': request_data['name'],
         'price': request_data['price'],
