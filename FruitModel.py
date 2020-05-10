@@ -17,6 +17,9 @@ class Fruit(db.Model):
     # from FruitModel import db
     # db.create_all()
 
+    def json(self):
+        return {'name': self.name, 'price': self.price, 'stock': self.stock}
+
     def add_fruit(_name, _price, _stock):
         new_fruit = Fruit(name=_name, price=_price, stock=_stock)
         db.session.add(new_fruit)
@@ -24,6 +27,29 @@ class Fruit(db.Model):
 
     def get_all_fruits():
         return Fruit.query.all()
+
+    def get_fruit(_stock):
+        return Fruit.query.filter_by(stock=_stock).first()
+
+    def delete_fruit(_stock):
+        Fruit.query.filter_by(stock=_stock).delete()
+        db.session.commit()
+
+    def update_fruit_name(_stock, _name):
+        fruit_to_update = Fruit.query.filter_by(stock=_stock).first()
+        fruit_to_update.name = _name
+        db.session.commit()
+
+    def update_fruit_price(_stock, _price):
+        fruit_to_update = Fruit.query.filter_by(stock=_stock).first()
+        fruit_to_update.price = _price
+        db.session.commit()
+
+    def replace_fruit(_stock, _name, _price):
+        fruit_to_replace = Fruit.query.filter_by(stock=_stock).first()
+        fruit_to_replace.name = _name
+        fruit_to_replace.price = _price
+        db.session.commit()
 
     def __repr__(self):
         fruit_object = {
