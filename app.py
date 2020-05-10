@@ -1,10 +1,33 @@
-from flask import jsonify, request, Response
-from FruitModel import *
-from settings import *
 import json
-
+import datetime
+import jwt
+from FruitModel import *
+from flask import jsonify, request, Response
+from settings import *
 
 DEFAULT_PAGE_LIMIT = 3
+
+app.config['SECRET_KEY'] = 'yummy'
+
+
+# Login '/login'
+@app.route('/login')
+def get_token():
+    expiration_date = datetime.datetime.utcnow() + datetime.timedelta(seconds=100)
+    token = jwt.encode({'exp': expiration_date}, app.config['SECRET_KEY'], algorithm='HS256')
+    return token
+
+
+# # GET /fruits/page/1?limit=100
+# @app.route('/fruits/page/<int:page_number>')
+# def get_paginated_fruits(page_number):
+#     print(type(request.args.get('limit')))
+#     limit = request.args.get('limit', DEFAULT_PAGE_LIMIT, int)
+#     start_index = page_number * limit - limit
+#     end_index = page_number * limit
+#     print(start_index)
+#     print(end_index)
+#     return jsonify({'fruits': fruits[start_index:end_index]})
 
 
 # Homepage
@@ -13,9 +36,15 @@ def get_homepage():
     return 'Hello World!'
 
 
-# GET /fruits
+# GET /fruits?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9
 @app.route('/fruits')
 def get_fruits():
+    token = request.args.get('token')
+    try:
+        jwt.decode(token, app.config['SECRET_KEY'])
+    except Exception as e:
+        return jsonify({'error': 'Need a valid token to view this page', 'msg': str(e)}), 401
+
     return jsonify({'fruits': Fruit.get_all_fruits()})
 
 
@@ -61,6 +90,7 @@ def valid_put_request_data(request_data):
     else:
         return False
 
+
 # PUT /fruits/<int:stock>
 @app.route('/fruits/<int:stock>', methods=['PUT'])
 def replace_fruit(stock):
@@ -87,6 +117,7 @@ def valid_patch_request_data(request_data):
         return True
     else:
         return False
+
 
 # PATCH /fruits/<int:stock>
 @app.route('/fruits/<int:stock>', methods=['PATCH'])
