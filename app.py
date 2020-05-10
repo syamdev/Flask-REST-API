@@ -253,9 +253,19 @@ def update_fruit(stock):
 # DELETE /fruits/<int:stock>
 @app.route('/fruits/<int:stock>', methods=['DELETE'])
 def delete_fruit(stock):
+    i = 0
     for fruit in fruits:
         if fruit["stock"] == stock:
-            return jsonify(fruit)
+            fruits.pop(i)
+            response = Response("", status=204)
+            return response
+        i += 1
+
+    invalid_fruit_obj_error_msg = {
+        "error": "Fruit with stock number provided not found, so unable to delete.",
+    }
+    response = Response(json.dumps(invalid_fruit_obj_error_msg), status=404, mimetype='application/json')
+    return response
 
 
 app.run(port=5000)
