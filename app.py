@@ -1,14 +1,13 @@
 from flask import Flask, jsonify, request, Response
 import json
 
-
 app = Flask(__name__)
 
 fruits = [
     {
         'name': 'Apple',
         'price': 3.99,
-        'stock': 2001
+        'stock': 2020
     },
     {
         'name': 'Banana',
@@ -169,6 +168,18 @@ def get_fruits_by_stock(stock):
                 'price': fruit['price']
             }
     return jsonify(return_value)
+
+# Test PUT request
+# {
+#     "price": 3.99,
+#     "stock": 2020
+# }
+
+
+# PUT /fruits/<int:stock>
+@app.route('/fruits/<int:stock>', methods=['PUT'])
+def replace_fruit(stock):
+    return jsonify(request.get_json())
 
 
 app.run(port=5000)
