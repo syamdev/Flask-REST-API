@@ -214,4 +214,20 @@ def replace_fruit(stock):
     return response
 
 
+# PATCH /fruits/<int:stock>
+@app.route('/fruits/<int:stock>', methods=['PATCH'])
+def update_fruit(stock):
+    request_data = request.get_json()
+    updated_fruit = {}
+    if "name" in request_data:
+        updated_fruit["name"] = request_data['name']
+
+    for fruit in fruits:
+        if fruit["stock"] == stock:
+            fruit.update(updated_fruit)
+    response = Response("", status=204)
+    response.headers['Location'] = "/fruit/" + str(stock)
+    return response
+
+
 app.run(port=5000)
