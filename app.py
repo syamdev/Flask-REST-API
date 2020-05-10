@@ -1,114 +1,8 @@
-from flask import Flask, jsonify, request, Response
-import json
+from flask import jsonify, request, Response
+from FruitModel import *
 from settings import *
+import json
 
-fruits = [
-    {
-        'name': 'Apple',
-        'price': 3.99,
-        'stock': 2001
-    },
-    {
-        'name': 'Banana',
-        'price': 4.99,
-        'stock': 2002
-    },
-    {
-        'name': 'Cherry',
-        'price': 2.99,
-        'stock': 2003
-    },
-    {
-        'name': 'Durian',
-        'price': 4.99,
-        'stock': 2004
-    },
-    {
-        'name': 'Elderberry',
-        'price': 3.99,
-        'stock': 2005
-    },
-    {
-        'name': 'Fig',
-        'price': 2.99,
-        'stock': 2006
-    },
-    {
-        'name': 'Grape',
-        'price': 3.99,
-        'stock': 2007
-    },
-    {
-        'name': 'Honeyberry',
-        'price': 4.99,
-        'stock': 2008
-    },
-    {
-        'name': 'Incaberry',
-        'price': 2.99,
-        'stock': 2009
-    },
-    {
-        'name': 'Jackfruit',
-        'price': 4.99,
-        'stock': 2010
-    },
-    {
-        'name': 'Kiwifruit',
-        'price': 3.99,
-        'stock': 2011
-    },
-    {
-        'name': 'Lemon',
-        'price': 2.99,
-        'stock': 2012
-    },
-    {
-        'name': 'Mango',
-        'price': 4.99,
-        'stock': 2013
-    },
-    {
-        'name': 'Nectarine',
-        'price': 3.99,
-        'stock': 2014
-    },
-    {
-        'name': 'Orange',
-        'price': 2.99,
-        'stock': 2015
-    },
-    {
-        'name': 'Papaya',
-        'price': 3.99,
-        'stock': 2016
-    },
-    {
-        'name': 'Quince',
-        'price': 4.99,
-        'stock': 2017
-    },
-    {
-        'name': 'Raspberry',
-        'price': 2.99,
-        'stock': 2018
-    },
-    {
-        'name': 'Strawberry',
-        'price': 4.99,
-        'stock': 2019
-    },
-    {
-        'name': 'Tamarind',
-        'price': 3.99,
-        'stock': 2020
-    },
-    {
-        'name': 'Watermelon',
-        'price': 2.99,
-        'stock': 2021
-    }
-]
 
 DEFAULT_PAGE_LIMIT = 3
 
@@ -122,28 +16,14 @@ def get_homepage():
 # GET /fruits
 @app.route('/fruits')
 def get_fruits():
-    return jsonify({'fruits': fruits})
+    return jsonify({'fruits': Fruit.get_all_fruits()})
 
 
 # /fruits/stock_number GET request
 @app.route('/fruits/<int:stock>')
 def get_fruits_by_stock(stock):
-    return_value = {}
-    for fruit in fruits:
-        if fruit['stock'] == stock:
-            return_value = {
-                'name': fruit['name'],
-                'price': fruit['price']
-            }
+    return_value = Fruit.get_fruit(stock)
     return jsonify(return_value)
-
-
-# GET /fruits/page/<int:page_number>
-@app.route('/fruits/page/<int:page_number>')
-def get_paginated_fruits(page_number):
-    print(type(request.args.get('limit')))
-    limit = request.args.get('limit', DEFAULT_PAGE_LIMIT, int)
-    return jsonify({'fruits': fruits[page_number * limit - limit:page_number * limit]})
 
 
 # handle validity data request
@@ -159,15 +39,10 @@ def valid_fruit_object(fruit_object):
 def add_fruits():
     request_data = request.get_json()
     if valid_fruit_object(request_data):
-        new_fruit = {
-            "name": request_data['name'],
-            "price": request_data['price'],
-            "stock": request_data['stock']
-        }
-        fruits.insert(0, new_fruit)
-        # send response to body
+        Fruit.add_fruit(request_data['name'], request_data['price'], request_data['stock'])
+
         response = Response('', 201, mimetype='application/json')
-        response.headers['Location'] = '/fruits/' + str(new_fruit['stock'])
+        response.headers['Location'] = '/fruits/' + str(request_data['stock'])
         return response
     else:
         # handle response for invalid data request
@@ -179,19 +54,12 @@ def add_fruits():
         return response
 
 
-# Test PUT request
-# {
-#     "price": 3.99,
-#     "stock": 2020
-# }
-
 # Check validity when PUT request
 def valid_put_request_data(request_data):
     if "name" in request_data and "price" in request_data:
         return True
     else:
         return False
-
 
 # PUT /fruits/<int:stock>
 @app.route('/fruits/<int:stock>', methods=['PUT'])
@@ -207,42 +75,38 @@ def replace_fruit(stock):
         response = Response(json.dumps(invalid_fruit_obj_error_msg), status=400, mimetype='application/json')
         return response
 
-    new_fruit = {
-        'name': request_data['name'],
-        'price': request_data['price'],
-        'stock': stock
-    }
-
-    i = 0
-    for fruit in fruits:
-        current_stock = fruit["stock"]
-        if current_stock == stock:
-            fruits[i] = new_fruit
-        i += 1
+    Fruit.replace_fruit(stock, request_data['name'], request_data['price'])
 
     response = Response("", status=204)
     return response
 
 
-# Test PATCH request name or price only
-# {
-# 	"name": "Avocado"
-# }
+# Check validity when PATCH request
+def valid_patch_request_data(request_data):
+    if "name" in request_data or "price" in request_data:
+        return True
+    else:
+        return False
 
 # PATCH /fruits/<int:stock>
 @app.route('/fruits/<int:stock>', methods=['PATCH'])
 def update_fruit(stock):
     request_data = request.get_json()
-    updated_fruit = {}
+
+    # handle invalid data
+    if not valid_patch_request_data(request_data):
+        invalid_fruit_obj_error_msg = {
+            "error": "Invalid fruit object passed in request",
+            "help_string": "Data passed in similar to this {'name': 'fruitname', 'price': 3.99, 'stock': 2002 }"
+        }
+        response = Response(json.dumps(invalid_fruit_obj_error_msg), status=400, mimetype='application/json')
+        return response
+
     if "name" in request_data:
-        updated_fruit["name"] = request_data['name']
+        Fruit.update_fruit_name(stock, request_data['name'])
 
     if "price" in request_data:
-        updated_fruit["price"] = request_data['price']
-
-    for fruit in fruits:
-        if fruit["stock"] == stock:
-            fruit.update(updated_fruit)
+        Fruit.update_fruit_price(stock, request_data['price'])
 
     response = Response("", status=204)
     response.headers['Location'] = "/fruits/" + str(stock)
@@ -252,13 +116,9 @@ def update_fruit(stock):
 # DELETE /fruits/<int:stock>
 @app.route('/fruits/<int:stock>', methods=['DELETE'])
 def delete_fruit(stock):
-    i = 0
-    for fruit in fruits:
-        if fruit["stock"] == stock:
-            fruits.pop(i)
-            response = Response("", status=204)
-            return response
-        i += 1
+    if Fruit.delete_fruit(stock):
+        response = Response("", status=204)
+        return response
 
     invalid_fruit_obj_error_msg = {
         "error": "Fruit with stock number provided not found, so unable to delete.",

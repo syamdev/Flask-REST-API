@@ -32,8 +32,9 @@ class Fruit(db.Model):
         return Fruit.query.filter_by(stock=_stock).first()
 
     def delete_fruit(_stock):
-        Fruit.query.filter_by(stock=_stock).delete()
+        is_successful = Fruit.query.filter_by(stock=_stock).delete()
         db.session.commit()
+        return bool(is_successful)
 
     def update_fruit_name(_stock, _name):
         fruit_to_update = Fruit.query.filter_by(stock=_stock).first()
