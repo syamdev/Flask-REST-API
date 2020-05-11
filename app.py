@@ -4,6 +4,7 @@ import jwt
 from FruitModel import *
 from UserModel import User
 from flask import jsonify, request, Response
+from functools import wraps
 from settings import *
 
 DEFAULT_PAGE_LIMIT = 3
@@ -47,15 +48,22 @@ def get_homepage():
     return 'Hello World!'
 
 
-# GET /fruits?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9
+def token_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        token = request.args.get('token')
+        try:
+            jwt.decode(token, app.config['SECRET_KEY'])
+            return f(*args, **kwargs)
+        except Exception as e:
+            return jsonify({'error': 'Need a valid token to view this page', 'msg': str(e)}), 401
+
+    return wrapper
+
+
+# GET /fruits
 @app.route('/fruits')
 def get_fruits():
-    token = request.args.get('token')
-    try:
-        jwt.decode(token, app.config['SECRET_KEY'])
-    except Exception as e:
-        return jsonify({'error': 'Need a valid token to view this page', 'msg': str(e)}), 401
-
     return jsonify({'fruits': Fruit.get_all_fruits()})
 
 
@@ -76,6 +84,7 @@ def valid_fruit_object(fruit_object):
 
 # POST /fruits/stock_number
 @app.route('/fruits', methods=['POST'])
+@token_required
 def add_fruits():
     request_data = request.get_json()
     if valid_fruit_object(request_data):
@@ -104,6 +113,7 @@ def valid_put_request_data(request_data):
 
 # PUT /fruits/<int:stock>
 @app.route('/fruits/<int:stock>', methods=['PUT'])
+@token_required
 def replace_fruit(stock):
     request_data = request.get_json()
 
@@ -132,6 +142,7 @@ def valid_patch_request_data(request_data):
 
 # PATCH /fruits/<int:stock>
 @app.route('/fruits/<int:stock>', methods=['PATCH'])
+@token_required
 def update_fruit(stock):
     request_data = request.get_json()
 
@@ -157,6 +168,7 @@ def update_fruit(stock):
 
 # DELETE /fruits/<int:stock>
 @app.route('/fruits/<int:stock>', methods=['DELETE'])
+@token_required
 def delete_fruit(stock):
     if Fruit.delete_fruit(stock):
         response = Response("", status=204)
