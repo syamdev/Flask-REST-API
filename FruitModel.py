@@ -29,7 +29,7 @@ class Fruit(db.Model):
         return [Fruit.json(fruit) for fruit in Fruit.query.all()]
 
     def get_fruit(_stock):
-        return Fruit.query.filter_by(stock=_stock).first()
+        return Fruit.json(Fruit.query.filter_by(stock=_stock).first())
 
     def delete_fruit(_stock):
         is_successful = Fruit.query.filter_by(stock=_stock).delete()
