@@ -1,4 +1,3 @@
-from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import json
 from settings import app
@@ -16,6 +15,7 @@ class Fruit(db.Model):
     # commands to create model in console
     # from FruitModel import db
     # db.create_all()
+    # cat database.db
 
     def json(self):
         return {'name': self.name, 'price': self.price, 'stock': self.stock}
