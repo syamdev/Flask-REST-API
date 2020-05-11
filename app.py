@@ -2,6 +2,7 @@ import json
 import datetime
 import jwt
 from FruitModel import *
+from UserModel import User
 from flask import jsonify, request, Response
 from settings import *
 
@@ -11,11 +12,21 @@ app.config['SECRET_KEY'] = 'yummy'
 
 
 # Login '/login'
-@app.route('/login')
+@app.route('/login', methods=['POST'])
 def get_token():
-    expiration_date = datetime.datetime.utcnow() + datetime.timedelta(seconds=100)
-    token = jwt.encode({'exp': expiration_date}, app.config['SECRET_KEY'], algorithm='HS256')
-    return token
+    request_data = request.get_json()
+    username = str(request_data['username'])
+    password = str(request_data['password'])
+
+    match = User.username_password_match(username, password)
+
+    # validating data to login
+    if match:
+        expiration_date = datetime.datetime.utcnow() + datetime.timedelta(seconds=100)
+        token = jwt.encode({'exp': expiration_date}, app.config['SECRET_KEY'], algorithm='HS256')
+        return token
+    else:
+        return Response('', 401, mimetype='application/json')
 
 
 # # GET /fruits/page/1?limit=100
